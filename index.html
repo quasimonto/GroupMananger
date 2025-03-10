@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Person Location Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="sidebar">
+        <div class="header-controls">
+            <h2>Location Tracker</h2>
+            <button id="open-config" class="config-button" title="Settings">⚙️</button>
+        </div>
+        
+        <div class="search-box">
+            <input id="search-input" type="text" placeholder="Search for a location...">
+        </div>
+        
+        <div class="action-buttons">
+            <button id="add-person">Add Person</button>
+            <button id="add-meeting">Add Meeting Point</button>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tab-buttons">
+                <button class="tab-button active" data-tab="people-tab">People</button>
+                <button class="tab-button" data-tab="meetings-tab">Meeting Points</button>
+            </div>
+            
+            <div id="people-tab" class="tab-content active">
+                <div class="filter-controls">
+                    <!-- Name filter -->
+                    <div class="filter-section">
+                        <label>Filter by Name:</label>
+                        <input type="text" id="name-filter" placeholder="Search by name..." class="name-filter-input">
+                    </div>
+                    
+                    <div class="filter-section">
+                        <label>Filter by Role:</label>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-elder">
+                            <label for="filter-elder">Elder</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-servant">
+                            <label for="filter-servant">Servant</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-pioneer">
+                            <label for="filter-pioneer">Pioneer</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-familyhead">
+                            <label for="filter-familyhead">Family Head</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-leader">
+                            <label for="filter-leader">Leader</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="filter-helper">
+                            <label for="filter-helper">Helper</label>
+                        </div>
+                    </div>
+                    <button id="apply-filter">Apply Filter</button>
+                    <button id="clear-filter">Clear Filter</button>
+                </div>
+                
+                <div class="person-list" id="person-list">
+                    <!-- People will be listed here -->
+                </div>
+            </div>
+            
+            <div id="meetings-tab" class="tab-content">
+                <div class="person-list" id="meeting-list">
+                    <!-- Meeting points will be listed here -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="group-controls">
+            <h3>Groups</h3>
+            <div id="group-list">
+                <!-- Groups will be listed here -->
+            </div>
+            <button id="create-group">Create Group</button>
+        </div>
+        
+        <!-- New Import/Export Section -->
+        <div class="import-export-controls">
+            <h3>Data Management</h3>
+            <div class="import-export-buttons">
+                <button id="export-data">Export Data</button>
+                <button id="import-data">Import Data</button>
+                <input type="file" id="import-file-input" accept=".json" style="display: none;">
+            </div>
+        </div>
+        
+        <!-- Visibility Toggle Controls -->
+        <div class="visibility-controls">
+            <h3>Show/Hide Elements</h3>
+            <div class="toggle-section">
+                <div class="toggle-item">
+                    <input type="checkbox" id="toggle-people" checked>
+                    <label for="toggle-people">Show People</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="toggle-meetings" checked>
+                    <label for="toggle-meetings">Show Meeting Points</label>
+                </div>
+                <div class="toggle-item">
+                    <input type="checkbox" id="toggle-groups" checked>
+                    <label for="toggle-groups">Show Group Colors</label>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="map-container">
+        <div id="map"></div>
+    </div>
+    
+    <!-- Updated Person Add/Edit Modal -->
+    <div id="person-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="modal-title">Add Person</h3>
+            <input id="person-name" type="text" placeholder="Name">
+            
+            <div class="checkbox-group">
+                <h4>Role/Status</h4>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-elder">
+                    <label for="person-elder">Elder</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-servant">
+                    <label for="person-servant">Servant</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-pioneer">
+                    <label for="person-pioneer">Pioneer</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-spouse">
+                    <label for="person-spouse">Spouse</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-child">
+                    <label for="person-child">Child</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-familyhead">
+                    <label for="person-familyhead">Family Head</label>
+                </div>
+            </div>
+            
+            <div class="checkbox-group">
+                <h4>Group Role</h4>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-leader">
+                    <label for="person-leader">Leader</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="person-helper">
+                    <label for="person-helper">Helper</label>
+                </div>
+            </div>
+            
+            <select id="person-group">
+                <option value="">No Group</option>
+                <!-- Groups will be added here -->
+            </select>
+            
+            <div class="modal-button-group">
+                <button id="save-person">Save</button>
+                <button id="cancel-person">Cancel</button>
+                <button id="show-travel-times" class="secondary-button">Show Travel Times</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Meeting Point Modal -->
+    <div id="meeting-modal" class="modal">
+        <div class="modal-content">
+            <h3 id="meeting-modal-title">Add Meeting Point</h3>
+            <input id="meeting-name" type="text" placeholder="Meeting Point Name">
+            <textarea id="meeting-description" placeholder="Description" rows="3"></textarea>
+            <select id="meeting-group">
+                <option value="">No Group</option>
+                <!-- Groups will be added here -->
+            </select>
+            <button id="save-meeting">Save</button>
+            <button id="cancel-meeting">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Group Creation Modal -->
+    <div id="group-modal" class="modal">
+        <div class="modal-content">
+            <h3>Create Group</h3>
+            <input id="group-name" type="text" placeholder="Group Name">
+            <input id="group-color" type="color" value="#FF0000">
+            <button id="save-group">Save</button>
+            <button id="cancel-group">Cancel</button>
+        </div>
+    </div>
+    
+    <!-- Updated Configuration Modal -->
+    <div id="config-modal" class="modal">
+        <div class="modal-content config-modal-content">
+            <h3>Configuration</h3>
+            
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button class="tab-button active" data-tab="appearance-tab">Appearance</button>
+                    <button class="tab-button" data-tab="autogroup-tab">Group Creation</button>
+                </div>
+                
+                <div id="appearance-tab" class="tab-content active">
+                    <h4>Marker Appearance</h4>
+                    
+                    <div class="config-section">
+                        <h5>Person Markers</h5>
+                        <div class="config-row">
+                            <label>Default Icon:</label>
+                            <select id="person-icon-select">
+                                <option value="default">Default Marker</option>
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="star">Star</option>
+                                <option value="person">Person Silhouette</option>
+                            </select>
+                        </div>
+                        <div class="config-row">
+                            <label>Default Color:</label>
+                            <input type="color" id="person-color" value="#FF0000">
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h5>Meeting Point Markers</h5>
+                        <div class="config-row">
+                            <label>Default Icon:</label>
+                            <select id="meeting-icon-select">
+                                <option value="blue-dot">Blue Dot</option>
+                                <option value="green-dot">Green Dot</option>
+                                <option value="purple-dot">Purple Dot</option>
+                                <option value="flag">Flag</option>
+                                <option value="info">Info</option>
+                            </select>
+                        </div>
+                        <div class="config-row">
+                            <label>Default Color:</label>
+                            <input type="color" id="meeting-color" value="#0000FF">
+                        </div>
+                    </div>
+                    
+                    <div class="config-section">
+                        <h5>Group Settings</h5>
+                        <div class="config-row">
+                            <label>Group Marker Style:</label>
+                            <select id="group-icon-select">
+                                <option value="circle">Circle</option>
+                                <option value="square">Square</option>
+                                <option value="star">Star</option>
+                                <option value="custom-color">Custom Color Only</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="autogroup-tab" class="tab-content">
+                    <h4>Group Creation Settings</h4>
+                    
+                    <div class="config-section">
+                        <div class="config-row">
+                            <label>Keep Families Together:</label>
+                            <input type="checkbox" id="keep-families-together" checked>
+                        </div>
+                        <div class="config-row">
+                            <label>Distance Threshold (m):</label>
+                            <select id="distance-threshold">
+                                <option value="0.5">500</option>
+                                <option value="1.0">1000</option>
+                                <option value="1.5">1500</option>
+                                <option value="2.0">2000</option>
+                                <option value="2.5">2500</option>
+                                <option value="3.0">3000</option>
+                                <option value="3.5">3500</option>
+                                <option value="4.0">4000</option>
+                                <option value="4.5">4500</option>
+                                <option value="5.0">5000</option>
+                            </select>
+                        </div>
+                        
+                        <h5>Group Composition Requirements</h5>
+                        <div class="config-row">
+                            <label>Minimum Group Size:</label>
+                            <input type="number" id="min-group-size" value="2" min="2" max="20">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Publishers per Group:</label>
+                            <input type="number" id="min-publishers" value="0" min="0" max="10">
+                        </div>
+                        <div class="config-row">
+                            <label>Maximum Group Size:</label>
+                            <input type="number" id="max-group-size" value="20" min="5" max="50">
+                        </div>
+                        <div class="config-row">
+                            <label>Max Group Size Difference:</label>
+                            <input type="number" id="max-group-size-difference" value="5" min="1" max="20">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Elders per Group:</label>
+                            <input type="number" id="min-elders" value="0" min="0" max="10">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Servants per Group:</label>
+                            <input type="number" id="min-servants" value="0" min="0" max="10">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Pioneers per Group:</label>
+                            <input type="number" id="min-pioneers" value="0" min="0" max="10">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Leaders per Group:</label>
+                            <input type="number" id="min-leaders" value="1" min="0" max="5">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Helpers per Group:</label>
+                            <input type="number" id="min-helpers" value="1" min="0" max="5">
+                        </div>
+                        <div class="config-row">
+                            <label>Minimum Publishers per Group:</label>
+                            <input type="number" id="min-publishers" value="0" min="0" max="10">
+                        </div>
+                        <div class="config-row">
+                            <label>Keep Families Together:</label>
+                            <input type="checkbox" id="keep-families-together" checked>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="config-buttons">
+                <button id="save-config">Save Configuration</button>
+                <button id="cancel-config">Cancel</button>
+                <button id="reset-config">Reset to Defaults</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Travel Time Modal -->
+    <div id="travel-time-modal" class="modal">
+        <div class="modal-content travel-time-modal-content">
+            <div class="modal-header">
+                <h3 id="travel-time-modal-title">Travel Times</h3>
+                <button id="close-travel-time" class="close-button">×</button>
+            </div>
+            <div id="travel-time-results" class="travel-time-results">
+                <!-- Travel time results will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Creation Preview Modal -->
+    <div id="group-creation-preview-modal" class="modal">
+        <div class="modal-content group-creation-preview-content">
+            <div class="modal-header">
+                <h3>Smart Group Creation Preview</h3>
+                <button id="close-group-creation-preview" class="close-button">×</button>
+            </div>
+            
+            <div id="group-creation-steps-container">
+                <!-- Group creation steps will be dynamically inserted here -->
+            </div>
+            
+            <div class="group-creation-actions">
+                <button id="confirm-group-creation" class="primary-button">Create These Groups</button>
+                <button id="cancel-group-creation" class="secondary-button">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Group Details Modal -->
+    <div id="group-details-modal" class="modal">
+        <div class="modal-content group-details-modal-content">
+            <div class="modal-header">
+                <h3 id="group-details-title">Group Details</h3>
+                <button id="close-group-details" class="close-button">×</button>
+            </div>
+            <div class="group-details-container">
+                <div class="group-edit-section">
+                    <h4>Group Information</h4>
+                    <div class="form-row">
+                        <label for="edit-group-name">Name:</label>
+                        <input type="text" id="edit-group-name">
+                    </div>
+                    <div class="form-row">
+                        <label for="edit-group-color">Color:</label>
+                        <input type="color" id="edit-group-color">
+                    </div>
+                    <button id="save-group-details" class="primary-button">Save Changes</button>
+                </div>
+                
+                <div class="group-stats-section">
+                    <h4>Group Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Members:</span>
+                            <span id="group-stat-total" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Elders:</span>
+                            <span id="group-stat-elders" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Servants:</span>
+                            <span id="group-stat-servants" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pioneers:</span>
+                            <span id="group-stat-pioneers" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Leaders:</span>
+                            <span id="group-stat-leaders" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Helpers:</span>
+                            <span id="group-stat-helpers" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Children:</span>
+                            <span id="group-stat-children" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Meeting Points:</span>
+                            <span id="group-stat-meetings" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="group-members-section">
+                    <h4>Group Members</h4>
+                    <div id="group-members-list" class="details-list"></div>
+                </div>
+                
+                <div class="group-meetings-section">
+                    <h4>Meeting Points</h4>
+                    <div id="group-meetings-list" class="details-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Modal -->
+    <div id="statistics-modal" class="modal">
+        <div class="modal-content statistics-modal-content">
+            <div class="modal-header">
+                <h3>Application Statistics</h3>
+                <button id="close-statistics" class="close-button">×</button>
+            </div>
+            
+            <div class="statistics-container">
+                <div class="stat-section">
+                    <h4>People Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total People:</span>
+                            <span id="stat-total-people" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Elders:</span>
+                            <span id="stat-total-elders" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Servants:</span>
+                            <span id="stat-total-servants" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Pioneers:</span>
+                            <span id="stat-total-pioneers" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Leaders:</span>
+                            <span id="stat-total-leaders" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Helpers:</span>
+                            <span id="stat-total-helpers" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Children:</span>
+                            <span id="stat-total-children" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Family Heads:</span>
+                            <span id="stat-total-familyheads" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-section">
+                    <h4>Location Statistics</h4>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Meeting Points:</span>
+                            <span id="stat-total-meetings" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Groups:</span>
+                            <span id="stat-total-groups" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">People in Groups:</span>
+                            <span id="stat-people-in-groups" class="stat-value">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">People not in Groups:</span>
+                            <span id="stat-people-not-in-groups" class="stat-value">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-section">
+                    <h4>Groups Overview</h4>
+                    <div id="groups-statistics-list" class="statistics-list">
+                        <!-- Group statistics will be listed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Load JavaScript files -->
+<script src="js/api-config.js"></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/person.js"></script>
+<script src="js/meeting.js"></script>
+<script src="js/group.js"></script>
+<script src="js/group-details.js"></script>
+<script src="js/filter.js"></script>
+<script src="js/travel-time.js"></script>
+<script src="js/group-travel.js"></script>
+<script src="js/import-export.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/statistics.js"></script>
+<script src="js/app-config.js"></script>
+<script src="js/family-relationships.js"></script>
+<script src="js/app.js"></script>
+<!-- Load the Google Maps API with Places and Geometry Libraries -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create and append the Google Maps script dynamically
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places,geometry&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        document.body.appendChild(script);
+    });
+</script>
+
+</body>
+</html>
