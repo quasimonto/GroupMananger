@@ -1,5 +1,5 @@
 // Google Maps API configuration
-const GOOGLE_MAPS_API_KEY = 'YourKey';
+const GOOGLE_MAPS_API_KEY = 'AIzaSyCNj7iTC2TtOoGHpHY_t6muu8mQp4GwcOM';
 
 // Default map center (Vienna, Austria)
 const DEFAULT_CENTER = {
